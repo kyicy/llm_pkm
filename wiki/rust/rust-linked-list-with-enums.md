@@ -69,3 +69,4 @@ list = list.prepend(3);
 
 - [Rust Enums](rust-enums.md) — enum variants, matching, and type aliases
 - [Rust Structs](rust-structs.md) — alternative way to model list nodes
+- [Rust Vectors](rust-vectors.md) — the idiomatic Rust collection for sequential data (preferred over custom linked lists in most cases)

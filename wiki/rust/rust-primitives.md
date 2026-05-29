@@ -34,6 +34,17 @@ The unit type `()` has exactly one value: an empty tuple `()`. Despite its tuple
 - **Arrays**: Fixed-size collections of same-type elements, e.g., `[1, 2, 3]` with type signature `[T; length]`.
 - **Tuples**: Collections of values of different types, e.g., `(1, true)` with type signature `(T1, T2, ...)`.
 
+### Beyond Primitives
+
+Rust also provides standard library types that build on these primitives:
+
+- **Vectors** (`Vec<T>`): Heap-allocated, resizable arrays
+- **Hashmaps** (`HashMap<K, V>`): Key-value dictionary with O(1) lookup
+- **Options** (`Option<T>`): Safe nullable values
+- **Strings** (`String`): Heap-allocated, growable UTF-8 string
+- **Atomics** (`AtomicUsize`, etc.): Thread-safe primitive counters
+- **Mutex** (`Mutex<T>`): Mutual exclusion for shared data
+
 ## Type Annotations and Inference
 
 Variables can be type-annotated in three ways:
@@ -71,3 +82,7 @@ let mutable = true;    // shadows previous `mutable`, new type allowed
 - [Rust Tuples](rust-tuples.md) — heterogeneous value collections
 - [Rust Custom Types](rust-custom-types.md) — structs, enums, and constants built on primitives
 - [Rust Printing and Formatting](rust-printing-and-formatting.md) — formatting types for output
+- [Rust Vectors](rust-vectors.md) — heap-allocated, resizable array type
+- [Rust Hashmaps](rust-hashmaps.md) — key-value dictionary type
+- [Rust Atomic Operations](rust-atomic-operations.md) — thread-safe integer operations
+- [Rust Mutex and Shared State](rust-mutex-and-shared-state.md) — shared mutable data

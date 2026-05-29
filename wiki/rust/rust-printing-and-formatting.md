@@ -1,7 +1,7 @@
 # Rust Printing and Formatting
 
-> Sources: Rust by Example, Unknown
-> Raw: [formatted-print.md](../../raw/rust/formatted-print.md); [formatting.md](../../raw/rust/formatting.md); [debug.md](../../raw/rust/debug.md); [display.md](../../raw/rust/display.md); [testcase-list.md](../../raw/rust/testcase-list.md)
+> Sources: Rust by Example, Unknown; Ardan Ultimate Rust Foundations, 2025
+> Raw: [formatted-print.md](../../raw/rust/formatted-print.md); [formatting.md](../../raw/rust/formatting.md); [debug.md](../../raw/rust/debug.md); [display.md](../../raw/rust/display.md); [testcase-list.md](../../raw/rust/testcase-list.md); [ardan-enums.md](../../raw/rust/ardan-enums.md); [ardan-structs.md](../../raw/rust/ardan-structs.md)
 
 ## Overview
 
@@ -50,8 +50,8 @@ Values can be padded and aligned:
 ```rust
 println!("{number:>5}", number=1);   // "    1" (right-align, width 5)
 println!("{number:0>5}", number=1);  // "00001" (right-align, zero-padded)
-println!("{number:0<5}", number=1);  // "10000" (left-align)
-println!("{number:0>width$}", number=1, width=5); // dynamic width
+println!("{:<20}{:<20}", "Username", "Login Action");  // left-align, pad to 20
+println!("{:-<40}", "");             // fill with `-`, left-align, width 40
 ```
 
 ### Capturing Variables (Rust 1.58+)
@@ -90,7 +90,9 @@ struct Person<'a> {
 println!("{:#?}", peter); // pretty-printed output
 ```
 
-`Debug` is the only formatting trait available for generic containers like `Vec<T>`, since `Display` cannot be meaningfully implemented for them.
+The `{:?}` shorthand is the standard way to print debug representations of any type that implements `Debug` — including enum variants, structs, and standard library containers.
+
+`Debug` is the only formatting trait available for generic containers like `Vec<T>`.
 
 ### Display (`fmt::Display`)
 
@@ -123,8 +125,19 @@ impl fmt::Display for List {
 }
 ```
 
+## Combined Format Specifiers
+
+Format specifiers can be combined for precise control:
+
+- `{:<20?}` — left-align, minimum width 20, debug format
+- `{:#?}` — pretty-print debug (multi-line, indented)
+- `{:<20}` — left-align, minimum width 20, display format
+- `{:-<40}` — fill with `-`, left-align, width 40
+
 ## See Also
 
 - [Rust Hello World](rust-hello-world.md) — introduces `println!` macro
 - [Rust Primitives](rust-primitives.md) — types being formatted
 - [Rust Literals and Operators](rust-literals-and-operators.md) — numeric format specifiers (`{:b}`, `{:x}`, `{:04b}`)
+- [Rust Enums](rust-enums.md) — enum debug printing with `{:?}`
+- [Rust Structs](rust-structs.md) — struct debug printing with `#[derive(Debug)]`

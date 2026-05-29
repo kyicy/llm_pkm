@@ -1,7 +1,7 @@
 # Rust Structs
 
-> Sources: Rust by Example, Unknown
-> Raw: [structs.md](../../raw/rust/2026-05-29-structs.md)
+> Sources: Rust by Example, Unknown; Ardan Ultimate Rust Foundations, 2025
+> Raw: [structs.md](../../raw/rust/2026-05-29-structs.md); [ardan-structs.md](../../raw/rust/ardan-structs.md)
 
 ## Overview
 
@@ -29,7 +29,6 @@ Positional fields accessed by index, like named tuples:
 
 ```rust
 struct Pair(i32, f32);
-
 let pair = Pair(1, 0.1);
 println!("{} and {}", pair.0, pair.1);
 ```
@@ -61,8 +60,65 @@ Copy remaining fields from another instance of the same type:
 
 ```rust
 let bottom_right = Point { x: 10.3, ..another_point };
-// bottom_right.y is taken from another_point.y
 ```
+
+## User Struct Example (with Methods)
+
+A practical example modeling a user with a constructor:
+
+```rust
+pub struct User {
+    username: String,
+    password: String,
+    action: LoginAction,
+}
+
+impl User {
+    pub fn new(username: &str, password: &str, action: LoginAction) -> Self {
+        Self {
+            username: username.to_string(),
+            password: password.to_string(),
+            action,  // field init shorthand — same as `action: action`
+        }
+    }
+}
+```
+
+The constructor uses `Self` to refer to the struct type, `to_string()` to convert `&str` to `String`, and field init shorthand to avoid repeating `action: action`.
+
+## Working with Arrays of Structs and Slices
+
+Store multiple users in an array:
+
+```rust
+pub fn get_users() -> [User; 3] {
+    [
+        User::new("herbert", "password", LoginAction::Accept(Role::Admin)),
+        User::new("bob", "password", LoginAction::Accept(Role::User)),
+        User::new("fred", "password", LoginAction::Denied(DeniedReason::PasswordExpired)),
+    ]
+}
+```
+
+A function accepting a slice (`&[User]`) can work with arrays, vectors, or any contiguous collection:
+
+```rust
+pub fn login(users: &[User], username: &str, password: &str) -> Option<LoginAction> {
+    users
+        .iter()
+        .find(|u| u.username == username && u.password == password)
+        .map(|user| user.action.clone())
+}
+```
+
+This pattern demonstrates:
+- **Slices (`&[T]`)**: accept any contiguous collection without knowing the container type
+- **Iterators (`.iter()`)**: create an iterator over elements
+- **`.find()`**: locate the first matching element using a closure
+- **`.map()`**: transform `Some(user)` into `Some(user.action.clone())`
+- **Clone**: required because `LoginAction` contains `String` fields — add `#[derive(Clone)]`
+
+Arrays autoconvert to slices when borrowed: `login(&users, &username, &password)` works because `&[User; 3]` coerces to `&[User]`.
 
 ## Destructuring
 
@@ -70,8 +126,6 @@ Structs can be destructured in `let` bindings:
 
 ```rust
 let Point { x: left_edge, y: top_edge } = point;
-
-// Tuple structs
 let Pair(integer, decimal) = pair;
 ```
 
@@ -86,11 +140,15 @@ struct Rectangle {
 }
 ```
 
-Derive `Debug` (`#[derive(Debug)]`) to enable debug printing with `{:?}`.
+Derive `Debug` (`#[derive(Debug)]`) to enable debug printing with `{:?}`. Derive `Clone` (`#[derive(Clone)]`) to enable deep copying.
 
 ## See Also
 
 - [Rust Custom Types](rust-custom-types.md) — overview of all custom type mechanisms
+- [Rust NewType Pattern](rust-new-type-pattern.md) — tuple struct wrappers for type safety
 - [Rust Enums](rust-enums.md) — enum variants can be unit-like, tuple-like, or struct-like
 - [Rust Tuples](rust-tuples.md) — tuple structs build on the same concepts
 - [Rust Printing and Formatting](rust-printing-and-formatting.md) — `Debug` and `Display` for structs
+- [Rust Generic Data Structures](rust-generic-data-structures.md) — generic types with `impl<T>` blocks
+- [Rust Arrays and Slices](rust-arrays-and-slices.md) — arrays and slices for storing structs
+- [Rust Vectors](rust-vectors.md) — the heap-allocated, resizable alternative to arrays

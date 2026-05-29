@@ -1,7 +1,7 @@
 # Rust Arrays and Slices
 
-> Sources: Rust by Example, Unknown
-> Raw: [arrays-and-slices.md](../../raw/rust/2026-05-29-arrays-and-slices.md)
+> Sources: Rust by Example, Unknown; Ardan Ultimate Rust Foundations, 2025
+> Raw: [arrays-and-slices.md](../../raw/rust/2026-05-29-arrays-and-slices.md); [ardan-structs.md](../../raw/rust/ardan-structs.md)
 
 ## Overview
 
@@ -24,6 +24,21 @@ let ys: [i32; 500] = [0; 500];              // 500 zeros
 - Zero-based indexing: `xs[0]` for the first element.
 - `.len()` returns the element count.
 - `std::mem::size_of_val` reports the byte size.
+- Type signature: `[T; length]` — the length is part of the type.
+
+### Arrays of Structs
+
+Arrays can hold user-defined struct types:
+
+```rust
+pub fn get_users() -> [User; 3] {
+    [
+        User::new("herbert", "password", LoginAction::Accept(Role::Admin)),
+        User::new("bob", "password", LoginAction::Accept(Role::User)),
+        User::new("fred", "password", LoginAction::Denied(DeniedReason::PasswordExpired)),
+    ]
+}
+```
 
 ### Safe Access with `.get()`
 
@@ -51,7 +66,7 @@ The word size matches `usize` (e.g., 64 bits on x86-64).
 
 ### Borrowing Arrays as Slices
 
-Arrays can be automatically borrowed as slices:
+Arrays can be automatically borrowed as slices (autoconversion):
 
 ```rust
 fn analyze_slice(slice: &[i32]) {
@@ -59,9 +74,11 @@ fn analyze_slice(slice: &[i32]) {
     println!("Slice length: {}", slice.len());
 }
 
-analyze_slice(&xs);          // borrow entire array
+analyze_slice(&xs);          // borrow entire array as &[i32]
 analyze_slice(&ys[1..4]);    // borrow a section
 ```
+
+This autoconversion works for any type that implements `Deref<Target = [T]>`, including `Vec<T>`, making `&[T]` a universal parameter type for read-only access to contiguous data.
 
 ### Range Syntax
 
@@ -75,8 +92,24 @@ assert_eq!(&empty_array, &[]);
 assert_eq!(&empty_array, &[][..]); // equivalent
 ```
 
+## Parallel Iteration
+
+Arrays and slices can be converted to parallel iterators using `into_par_iter()` from the Rayon crate:
+
+```rust
+let count = (2..200_000u32)
+    .into_par_iter()
+    .filter(|n| is_prime(*n))
+    .count();
+```
+
+See [Rust Rayon](rust-rayon.md) for details.
+
 ## See Also
 
 - [Rust Primitives](rust-primitives.md) — overview of scalar and compound types
 - [Rust Tuples](rust-tuples.md) — the other compound type
 - [Rust Printing and Formatting](rust-printing-and-formatting.md) — Debug formatting for arrays
+- [Rust Structs](rust-structs.md) — using arrays of structs with slices and iterators
+- [Rust Vectors](rust-vectors.md) — heap-allocated, resizable alternative to arrays
+- [Rust Rayon](rust-rayon.md) — parallel iterators on slice-compatible types
