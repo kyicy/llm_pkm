@@ -5,7 +5,7 @@ description: "Use when the user wants to learn interactively from a curriculum f
 
 # Curriculum Tutor
 
-Guide the user through an interactive, step-by-step learning path defined in a markdown curriculum file, using the **Feynman Technique** as the core pedagogy. You present topics one at a time, read linked wiki articles, teach concepts with simple language and analogies, then ask the user to explain them back to reveal gaps. Also includes comprehension checks, practice exercises, and mandatory day-end exams before allowing progression.
+Guide the user through an interactive, step-by-step learning path defined in a markdown curriculum file, using the **Feynman Technique** as the core pedagogy. You present topics one at a time, read linked wiki articles, teach concepts with simple language and analogies, then ask the user to explain them back to reveal gaps. Also includes comprehension checks, practice exercises, and mandatory day-end exams before allowing progression. **Supports multiple teaching languages** (English default, 中文, 日本語) with persistent configuration.
 
 ## Trigger Guidance
 
@@ -23,6 +23,23 @@ You should **auto-trigger** when a curriculum file is detected in the project an
 ---
 
 ## Phase 1: Startup / Discovery
+
+### Step 0: Load configuration
+
+Before anything else, check if the skill's configuration file exists at `.claude/skills/curriculum-tutor/config.json`.
+
+- **If it exists:** Read the `language` field. Supported codes:
+  - `en` — English (default)
+  - `zh` — 中文 (Chinese)
+  - `ja` — 日本語 (Japanese)
+  If the code is unrecognized or missing, default to `en`.
+- **If it doesn't exist:** Create the file with default content:
+  ```json
+  {"language": "en"}
+  ```
+  Announce: "Defaulting to English. Use `lang zh` to switch to Chinese, or `lang ja` for Japanese."
+
+Store the loaded language in `session.config.language`.
 
 ### Step 1: Find a curriculum file
 
@@ -55,6 +72,8 @@ Maintain the following state in memory for the duration of the session:
 
 ```
 session:
+  config:
+    language: "en"         # loaded from config.json on startup
   curriculum_path: <path>
   days:
     - title: "Day 1: Core Rust"
@@ -82,6 +101,8 @@ This phase uses the **Feynman Technique** as its core pedagogy. The principle is
 2. **You explain back** — you teach it to me as if I'm a beginner, revealing gaps
 3. **We fill gaps** — when you get stuck, that's where real learning happens
 4. **We verify** — brief check and practice to lock it in
+
+**Language:** All teaching communication MUST be delivered in the language specified by `session.config.language`. This includes: topic announcements, explanations, analogies, comprehension questions, exercise descriptions, exam questions, feedback, and progress summaries. Only code itself stays in English (keywords, variable names, types). Code comments may optionally be written in the configured language if it helps understanding.
 
 For each **unchecked** topic in the curriculum, execute the following sequence:
 
@@ -290,8 +311,20 @@ The user can issue the following commands at any point during the interactive lo
 | `summary` | Show overall progress (e.g., "Day 1: 5/8 topics, Exam: 98/100 PASSED") |
 | `save` | Update curriculum file checkboxes and exam results |
 | `exam` | Manually trigger the end-of-day exam early (only if at least 1 topic completed) |
+| `lang` | Show current language. Use `lang zh`, `lang en`, or `lang ja` to switch. Immediately switches teaching language and persists to config.json. |
 | `help` | Show this command table |
 | `stop` / `exit` | End the session (remind to use `save` first) |
+
+### Lang command details
+
+When the user runs `lang`:
+1. If no argument: Show current language. E.g., "Current teaching language: English (`en`). Supported: `en`, `zh`, `ja`."
+2. If an argument is provided (`lang zh`, `lang ja`, `lang en`):
+   - Update `session.config.language` in memory
+   - Write the new setting to `.claude/skills/curriculum-tutor/config.json` (overwrite the file with `{"language": "zh"}`)
+   - Confirm: "Switched teaching language to 中文 (zh)." (response in the new language)
+   - All subsequent interactions will use the new language
+3. If an unsupported code is given, show error: "Unsupported language code `{code}`. Supported: `en`, `zh`, `ja`."
 
 ### Summary output format
 
@@ -347,6 +380,31 @@ If the day already has an exam comment, **update it in place** (change the value
 ### Auto-save
 
 After passing an exam, auto-save the updated checkboxes and exam result to the curriculum file. The user doesn't need to manually `save` after an exam pass.
+
+---
+
+## Phase 7: Configuration Persistence
+
+### Language Setting
+
+The teaching language is persisted in `.claude/skills/curriculum-tutor/config.json` as a JSON file:
+
+```json
+{"language": "en"}
+```
+
+**When to write:**
+- On session start (Step 0): if config doesn't exist, create it with `{"language": "en"}`
+- On `lang <code>` command: immediately overwrite the file with the new setting
+- On `stop`/`exit`: no action needed — the config is already updated when the user runs `lang`
+
+**File format:**
+- Single-line JSON, no trailing newline required (but a trailing newline is fine)
+- Only the `language` field is managed automatically
+- If the file contains extra fields (e.g., future extensions), preserve them when writing back
+- If the file is corrupted or unparseable, overwrite it with `{"language": "en"}` and warn the user
+
+**Future extensibility:** The config file is designed to hold additional settings in the future (e.g., teaching speed, exam difficulty). When writing, always preserve any unknown fields to avoid accidentally wiping future config.
 
 ---
 
