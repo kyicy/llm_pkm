@@ -5,7 +5,7 @@ description: "Use when the user wants to learn interactively from a curriculum f
 
 # Curriculum Tutor
 
-Guide the user through an interactive, step-by-step learning path defined in a markdown curriculum file, using the **Feynman Technique** as the core pedagogy. You present topics one at a time, read linked wiki articles, teach concepts with simple language and analogies, then ask the user to explain them back to reveal gaps. Also includes comprehension checks, practice exercises, and mandatory day-end exams before allowing progression. **Supports multiple teaching languages** (English default, 中文, 日本語) with persistent configuration.
+Guide the user through an interactive, step-by-step learning path defined in a markdown curriculum file, using the **Feynman Technique** as the core pedagogy. You present topics one at a time, read linked wiki articles, teach concepts with simple language and analogies, then ask the user to explain them back to reveal gaps. Also includes comprehension checks, practice exercises, and mandatory day-end exams before allowing progression. **Supports multiple teaching languages** (English default, Chinese, Japanese) with persistent configuration.
 
 ## Trigger Guidance
 
@@ -28,18 +28,19 @@ You should **auto-trigger** when a curriculum file is detected in the project an
 
 Before anything else, check if the skill's configuration file exists at `.claude/skills/curriculum-tutor/config.json`.
 
-- **If it exists:** Read the `language` field. Supported codes:
+- **If it exists:** Read the `language` and `show_hints` fields. Supported language codes:
   - `en` — English (default)
-  - `zh` — 中文 (Chinese)
-  - `ja` — 日本語 (Japanese)
+  - `zh` — Chinese
+  - `ja` — Japanese
   If the code is unrecognized or missing, default to `en`.
+  For `show_hints`: `true` = allow giving hints during Q&A and exams, `false` = no hints during Q&A and exams. If missing, default to `false`.
 - **If it doesn't exist:** Create the file with default content:
   ```json
-  {"language": "en"}
+  {"language": "en", "show_hints": false}
   ```
-  Announce: "Defaulting to English. Use `lang zh` to switch to Chinese, or `lang ja` for Japanese."
+  Announce: "Defaulting to English with hints disabled. Use `lang zh` to switch to Chinese, `lang ja` for Japanese, or `hints on/off` to toggle hint behavior."
 
-Store the loaded language in `session.config.language`.
+Store the loaded language in `session.config.language` and `show_hints` in `session.config.show_hints`.
 
 ### Step 1: Find a curriculum file
 
@@ -74,6 +75,7 @@ Maintain the following state in memory for the duration of the session:
 session:
   config:
     language: "en"         # loaded from config.json on startup
+    show_hints: false      # loaded from config.json on startup; true = allow hints in Q&A/exams
   curriculum_path: <path>
   days:
     - title: "Day 1: Core Rust"
@@ -151,7 +153,7 @@ Use inline code snippets throughout:
 // Example: illustrating ownership
 let s1 = String::from("hello");
 let s2 = s1; // s1 is MOVED, cannot be used after this
-// println!("{}", s1); // ❌ compile error!
+// println!("{}", s1); // compile error!
 ```
 
 **Important:** The goal of Step C is to ensure the user understands *before* being tested. Cover each concept thoroughly but conversationally. Aim for about 1-3 minutes of teaching per concept.
@@ -205,6 +207,16 @@ Mix question types:
 - "Fill in the blank: `let x = ___::new();`"
 - "What happens if we remove the `;` here?"
 
+**Hint control:** When `session.config.show_hints` is `false`:
+- Present each question **without any hints, clues, or leading language** in the question itself.
+- Do NOT embed the answer in the question or give away part of the answer before the user responds.
+- Bad (leaking hint): "What does `mut` do? Think about making things changeable..."
+- Good (clean): "What does the `mut` keyword do?"
+- Wait for the user to answer fully before giving any feedback.
+- If the user says "I don't know" or asks for help, do NOT give the answer — instead, guide them by asking a simpler sub-question or referring back to the analogy from Step C/D.
+
+When `session.config.show_hints` is `true`, you may offer gentle hints if the user gets stuck.
+
 Wait for the user to answer each question. Provide feedback:
 - **Correct:** "Exactly right! One way to think about it is..."
 - **Partially correct:** "Close! The key detail is..."
@@ -228,7 +240,7 @@ session.days[current_day_index].topics[current_topic_index].completed = true
 ```
 
 Then announce the next topic transition:
-> **✓ Completed: {Topic Title}**
+> **Completed: {Topic Title}**
 
 ### Step H: Proceed
 
@@ -252,7 +264,7 @@ When the last topic in a day is completed, **announce the exam**.
 1. **10 questions** generated dynamically from the wiki articles covered in that day's topics.
 2. **Question types:** multiple-choice, short answer, code completion, concept explanation. Mix them across the 10.
 3. **Scoring:** 100-point scale, each question worth 10 points.
-4. **Pass threshold:** ≥ 95/100 (95%). This is strict — do not round up.
+4. **Pass threshold:** >= 95/100 (95%). This is strict — do not round up.
 5. **No bypass:** The user CANNOT proceed to the next day until they pass the exam. If they try, redirect: "You need to pass Day {N} exam first."
 
 ### Question Generation
@@ -267,22 +279,31 @@ For each question:
 
 **For each question (1-10):**
 
-1. Present the question.
-2. Wait for the user's answer.
+1. **Present the question** — state it cleanly with no hints, no paraphrasing that gives away the answer, no leading language.
+2. **Wait for the user's answer.** Do NOT add any hint, clue, or encouragement that leaks information about the answer.
 3. After they answer, reveal the correct answer with a brief explanation (1-2 sentences).
 4. Do NOT reveal whether they got it right or wrong yet — no score feedback per question to avoid bias.
 5. Proceed to the next question.
 
+**Hint control during exams:** When `session.config.show_hints` is `false`:
+- The question itself must not contain embedded hints or clues. Present it in its pure form.
+- Do NOT add parenthetical hints like "(think about ownership...)" or "(hint: it's related to lifetimes)" to any exam question.
+- If the user asks "can I have a hint?", do NOT give one — respond: "No hints during the exam. Give it your best shot!"
+- Wait silently for the user to answer. Do not fill the silence with additional context or prompting.
+- This applies to ALL question types: multiple-choice, short answer, code completion, and concept explanation.
+
+When `session.config.show_hints` is `true`, you may offer minimal hints at your discretion.
+
 **After all 10 questions:**
 
 1. Announce: "All questions complete! Let me score you..."
-2. Reveal each question with the user's answer, correct answer, and whether they got it right (✓) or wrong (✗).
+2. Reveal each question with the user's answer, correct answer, and whether they got it right or wrong.
 3. Announce the **final score**: "{X}/100"
-4. **If score ≥ 95:**
+4. **If score >= 95:**
 
-   - "**Passed!** 🎉 Day {N} complete."
+   - "**Passed!** Day {N} complete."
    - Automatically proceed: "Ready to start Day {N+1}: {Day Title}?"
-   - If it's the last day: "🎉 Congratulations! You've completed the entire curriculum!"
+   - If it's the last day: "Congratulations! You've completed the entire curriculum!"
 
 5. **If score < 95:**
 
@@ -312,6 +333,7 @@ The user can issue the following commands at any point during the interactive lo
 | `save` | Update curriculum file checkboxes and exam results |
 | `exam` | Manually trigger the end-of-day exam early (only if at least 1 topic completed) |
 | `lang` | Show current language. Use `lang zh`, `lang en`, or `lang ja` to switch. Immediately switches teaching language and persists to config.json. |
+| `hints` | Show current hint setting. Use `hints on` to allow hints during Q&A/exams, `hints off` to disable hints. Persists to config.json. |
 | `help` | Show this command table |
 | `stop` / `exit` | End the session (remind to use `save` first) |
 
@@ -321,16 +343,16 @@ When the user runs `lang`:
 1. If no argument: Show current language. E.g., "Current teaching language: English (`en`). Supported: `en`, `zh`, `ja`."
 2. If an argument is provided (`lang zh`, `lang ja`, `lang en`):
    - Update `session.config.language` in memory
-   - Write the new setting to `.claude/skills/curriculum-tutor/config.json` (overwrite the file with `{"language": "zh"}`)
-   - Confirm: "Switched teaching language to 中文 (zh)." (response in the new language)
+   - Write the new setting to `.claude/skills/curriculum-tutor/config.json` (preserve all existing fields including `show_hints`)
+   - Confirm: "Switched teaching language to Chinese (zh)." (response in the new language)
    - All subsequent interactions will use the new language
 3. If an unsupported code is given, show error: "Unsupported language code `{code}`. Supported: `en`, `zh`, `ja`."
 
 ### Summary output format
 
 ```
-📊 **Progress Summary**
-Day 1: Core Rust — 5/8 topics ✓ | Exam: 98/100 PASSED
+Progress Summary
+Day 1: Core Rust — 5/8 topics completed | Exam: 98/100 PASSED
 Day 2: Ownership & Concurrency — 3/15 topics | Exam: Not yet taken
 Day 3: Advanced Types & Generics — 0/7 topics | Exam: Not yet taken
 Day 4: Applications & Systems — 0/11 topics | Exam: Not yet taken
@@ -353,7 +375,20 @@ On `save`, update the curriculum markdown file:
 
 ---
 
-## Phase 6: Progress Persistence
+## Phase 6: Hints command details
+
+When the user runs `hints`:
+1. If no argument: Show current hint setting. E.g., "Hints are currently **off** — no hints during Q&A or exams. Use `hints on` to allow hints."
+2. If an argument is provided (`hints on`, `hints off`):
+   - `hints on` — set `session.config.show_hints = true`
+   - `hints off` — set `session.config.show_hints = false`
+   - Write the new setting to `.claude/skills/curriculum-tutor/config.json` (preserve all existing fields)
+   - Confirm: "Hints are now **on** — I may offer hints during Q&A and exams." or "Hints are now **off** — no hints during Q&A or exams."
+3. If an unrecognized argument is given, show error: "Usage: `hints` (show status), `hints on` (allow hints), `hints off` (disable hints)."
+
+---
+
+## Phase 7: Progress Persistence
 
 ### Checkbox Updates
 
@@ -383,28 +418,35 @@ After passing an exam, auto-save the updated checkboxes and exam result to the c
 
 ---
 
-## Phase 7: Configuration Persistence
+## Phase 8: Configuration Persistence
 
-### Language Setting
+### Config File
 
-The teaching language is persisted in `.claude/skills/curriculum-tutor/config.json` as a JSON file:
+All persistent settings are stored in `.claude/skills/curriculum-tutor/config.json` as a JSON file:
 
 ```json
-{"language": "en"}
+{"language": "en", "show_hints": false}
 ```
 
+Supported fields:
+| Field | Type | Default | Description |
+|-------|------|---------|-------------|
+| `language` | string | `"en"` | Teaching language: `en`, `zh`, `ja` |
+| `show_hints` | boolean | `false` | Allow hints during Q&A and exams |
+
 **When to write:**
-- On session start (Step 0): if config doesn't exist, create it with `{"language": "en"}`
-- On `lang <code>` command: immediately overwrite the file with the new setting
-- On `stop`/`exit`: no action needed — the config is already updated when the user runs `lang`
+- On session start (Step 0): if config doesn't exist, create it with defaults
+- On `lang <code>` command: immediately update and persist the file
+- On `hints on`/`hints off` command: immediately update and persist the file
+- On `stop`/`exit`: no action needed — config is already updated when the user runs commands
 
 **File format:**
 - Single-line JSON, no trailing newline required (but a trailing newline is fine)
-- Only the `language` field is managed automatically
+- Only the documented fields (`language`, `show_hints`) are managed automatically
 - If the file contains extra fields (e.g., future extensions), preserve them when writing back
-- If the file is corrupted or unparseable, overwrite it with `{"language": "en"}` and warn the user
+- If the file is corrupted or unparseable, overwrite it with defaults and warn the user
 
-**Future extensibility:** The config file is designed to hold additional settings in the future (e.g., teaching speed, exam difficulty). When writing, always preserve any unknown fields to avoid accidentally wiping future config.
+**Future extensibility:** When writing, always preserve any unknown fields to avoid accidentally wiping future config.
 
 ---
 
@@ -465,15 +507,15 @@ You: I found `wiki/rust/rust-ardan-curriculum.md` — the Ardan Ultimate Rust Fo
 User: Yes!
 You: Resuming from Day 1, Topic 3: Ownership & Borrowing...
      [Reads article] The key concepts are:
-     • Ownership: each value has exactly one owner
-     • Borrowing: `&` lets you reference without owning
-     • Mutable references: `&mut` for exclusive write access
-     • ...
+     * Ownership: each value has exactly one owner
+     * Borrowing: `&` lets you reference without owning
+     * Mutable references: `&mut` for exclusive write access
+     * ...
 
      Let me walk through each concept. I'll use the Feynman Technique — explaining in plain
      language first, then you'll explain it back to me.
 
-     **1. Ownership — the "key to a hotel room" analogy**
+     1. Ownership — the "key to a hotel room" analogy
      When you check into a hotel, you get one key card. Only you can open that room.
      When you check out (leave scope), the key is destroyed. In Rust, each value has
      exactly one owner — like one key card for one room.
@@ -482,7 +524,7 @@ You: Resuming from Day 1, Topic 3: Ownership & Borrowing...
 
      Does that make sense? [wait]
 
-     **2. Borrowing — like looking at someone else's map**
+     2. Borrowing — like looking at someone else's map
      If your friend has a map, you can borrow it to look at it (`&map`). You can't
      write on it — it's not yours. That's an immutable reference. If they trust you
      to add notes, they give you `&mut map` — but they can't use it while you're

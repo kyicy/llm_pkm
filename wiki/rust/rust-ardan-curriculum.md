@@ -15,9 +15,9 @@ Presented by Ardan Labs, Ultimate Rust: Foundations is a "zero to hero" workshop
 
 Basics of Rust: project setup, fundamental types, collections, serialization, and CLI applications.
 
-- [ ] **Class Introduction & Setup** — [Rust Cargo and Project Setup](rust-cargo-and-project-setup.md)
-- [ ] **Hello World** — [Rust Hello World](rust-hello-world.md)
-- [ ] **Cargo Workspaces** — [Rust Cargo Workspaces](rust-cargo-workspaces.md)
+- [x] **Class Introduction & Setup** — [Rust Cargo and Project Setup](rust-cargo-and-project-setup.md)
+- [x] **Hello World** — [Rust Hello World](rust-hello-world.md)
+- [x] **Cargo Workspaces** — [Rust Cargo Workspaces](rust-cargo-workspaces.md)
 - [ ] **Library Crates** — [Rust Library Crates](rust-library-crates.md)
 - [ ] **Unit Testing** — [Rust Testing](rust-testing.md)
 - [ ] **Enums** — [Rust Enums](rust-enums.md)
