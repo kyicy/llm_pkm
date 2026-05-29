@@ -38,3 +38,4 @@ Hello World!
 
 - [Rust Comments](rust-comments.md)
 - [Rust Printing and Formatting](rust-printing-and-formatting.md)
+- [Rust Primitives](rust-primitives.md) — type system used in program structure

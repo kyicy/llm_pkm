@@ -126,3 +126,5 @@ impl fmt::Display for List {
 ## See Also
 
 - [Rust Hello World](rust-hello-world.md) — introduces `println!` macro
+- [Rust Primitives](rust-primitives.md) — types being formatted
+- [Rust Literals and Operators](rust-literals-and-operators.md) — numeric format specifiers (`{:b}`, `{:x}`, `{:04b}`)
