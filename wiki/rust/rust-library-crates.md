@@ -107,6 +107,7 @@ See [Rust Modules and Visibility](rust-modules-and-visibility.md) for detailed c
 
 ## See Also
 
+- [Rust Crate Root](rust-crate-root.md) — crate root, `pub(crate)`, and the `crate` keyword
 - [Rust Modules and Visibility](rust-modules-and-visibility.md) — organizing library code with modules
 - [Rust Cargo and Project Setup](rust-cargo-and-project-setup.md) — Cargo.toml structure and project types
 - [Rust Cargo Workspaces](rust-cargo-workspaces.md) — organizing libraries and executables together

@@ -1,2 +1,5 @@
 [env]
 UV_PYTHON_INSTALL_MIRROR = "https://mirror.nju.edu.cn/github-release/astral-sh/python-build-standalone"
+
+[tools]
+rust = "latest"

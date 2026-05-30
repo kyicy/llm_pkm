@@ -108,5 +108,6 @@ A common convention is to create a `prelude` module that re-exports the most imp
 
 ## See Also
 
+- [Rust Crate Root](rust-crate-root.md) — crate root, `pub(crate)`, and the `crate` keyword
 - [Rust Library Crates](rust-library-crates.md) — crate types and public visibility
 - [Rust Documentation](rust-documentation.md) — documenting modules for consumers
