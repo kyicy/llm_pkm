@@ -34,21 +34,22 @@ Basics of Rust: project setup, fundamental types, collections, serialization, an
 
 Modules, documentation, error handling, borrow checker, lifetimes, OOP patterns, RAII, threading, atomics, mutexes, and async concurrency.
 
-- [ ] **Modules & Visibility** — [Rust Modules and Visibility](rust-modules-and-visibility.md)
-- [ ] **Documentation** — [Rust Documentation](rust-documentation.md)
-- [ ] **Error Handling** — [Rust Error Handling](rust-error-handling.md)
-- [ ] **Borrow Checker** — [Rust Borrow Checker](rust-borrow-checker.md)
-- [ ] **Lifetimes** — [Rust Lifetimes](rust-lifetimes.md)
-- [ ] **OOP Patterns** — [Rust Traits and OOP](rust-traits-and-oop.md)
-- [ ] **RAII / Drop Cleanup** — [Rust RAII](rust-raii.md)
-- [ ] **CPU Bound Workload (Counting Primes)** — [Rust Threads and Concurrency](rust-threads-and-concurrency.md)
-- [ ] **Data Races** — [Rust Threads and Concurrency](rust-threads-and-concurrency.md)
-- [ ] **Atomic Operations** — [Rust Atomic Operations](rust-atomic-operations.md)
-- [ ] **Shared State (Mutex)** — [Rust Mutex and Shared State](rust-mutex-and-shared-state.md)
-- [ ] **Rayon (Easy Concurrency)** — [Rust Rayon](rust-rayon.md)
-- [ ] **Async with Tokio** — [Rust Async and Tokio](rust-async-and-tokio.md)
-- [ ] **TCP Server with Tokio** — [Rust TCP Server](rust-tcp-server.md)
-- [ ] **Channels** — [Rust Channels](rust-channels.md)
+- [x] **Modules & Visibility** — [Rust Modules and Visibility](rust-modules-and-visibility.md)
+- [x] **Documentation** — [Rust Documentation](rust-documentation.md)
+- [x] **Error Handling** — [Rust Error Handling](rust-error-handling.md)
+- [x] **Borrow Checker** — [Rust Borrow Checker](rust-borrow-checker.md)
+- [x] **Lifetimes** — [Rust Lifetimes](rust-lifetimes.md)
+- [x] **OOP Patterns** — [Rust Traits and OOP](rust-traits-and-oop.md)
+- [x] **RAII / Drop Cleanup** — [Rust RAII](rust-raii.md)
+- [x] **CPU Bound Workload (Counting Primes)** — [Rust Threads and Concurrency](rust-threads-and-concurrency.md)
+- [x] **Data Races** — [Rust Threads and Concurrency](rust-threads-and-concurrency.md)
+- [x] **Atomic Operations** — [Rust Atomic Operations](rust-atomic-operations.md)
+- [x] **Shared State (Mutex)** — [Rust Mutex and Shared State](rust-mutex-and-shared-state.md)
+- [x] **Rayon (Easy Concurrency)** — [Rust Rayon](rust-rayon.md)
+- [x] **Async with Tokio** — [Rust Async and Tokio](rust-async-and-tokio.md)
+- [x] **TCP Server with Tokio** — [Rust TCP Server](rust-tcp-server.md)
+- [x] **Channels** — [Rust Channels](rust-channels.md)
+<!-- Day 2 Exam: 100/100 PASSED -->
 
 ## Day 3: Advanced Types & Generics
 
